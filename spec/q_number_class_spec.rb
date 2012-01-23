@@ -1,4 +1,4 @@
-require 'q_number_class'
+require 'config/require_all'
 
 describe QNumber do
 
