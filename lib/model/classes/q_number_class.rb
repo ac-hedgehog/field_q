@@ -1,5 +1,9 @@
 require 'config/require_all'
 
+#
+# Класс для работы с элементами алгебраических
+# расширений поля рациональных чисел вида Q(root^n(D))
+#
 class QNumber
   
   #============================================================
@@ -8,7 +12,14 @@ class QNumber
 
   N = 3 # Размерность поля Q(корень n степени из D) по дефолту
   D = 2 # Собственно, дефолтное значение D для поля Q
-  @@default_prop = {:n => N, :d => D} # Дефолтный массив свойств
+  #
+  # Массив свойств поля, которые присваиваются каждому
+  # новому созданному элементу по-дефолту
+  #
+  @@default_prop = {:n => N, :d => D}
+  #
+  # Массив компонент элемента поля
+  #
   attr_accessor :comp
   
   #============================================================
@@ -34,29 +45,38 @@ class QNumber
   #============================================================
 
   #
+  # Не меняет знака элемента
+  #
+  def +@
+    QNumber.new @comp, @prop
+  end
+
+  #
+  # Противоположный элемент поля
+  #
+  def -@
+    QNumber.new @comp.map { |component| -component }, @prop
+  end
+
+  #
   # Операция сложения в поле
   #
   def +(q)
-    # Операция производится только для элементов одного поля
-    if self.prop_is_equal? q.get_properties
-      # Складываем и возвращаем результат
-      QNumber.new Vector.elements(@comp) + Vector.elements(q.comp), @prop
-    else
-      raise ArgumentError.new "An attempt to add elements of different types"
-    end
+    operation q, :addition
+  end
+
+  #
+  # Операция вычитания в поле
+  #
+  def -(q)
+    operation q, :subtraction
   end
 
   #
   # Операция умножения в поле
   #
   def *(q)
-    # Операция производится только для элементов одного поля
-    if self.prop_is_equal? q.get_properties
-      # Складываем и возвращаем результат
-      QNumber.new self.matrix_for_norm * Vector.elements(q.comp), @prop
-    else
-      raise ArgumentError.new "An attempt to add elements of different types"
-    end
+    operation q, :multiplication
   end
   
   #============================================================
@@ -187,5 +207,98 @@ class QNumber
   # Приватные методы поля
   #============================================================
   private
+
+  #
+  # Второй операнд бинарной операции над элементами
+  # поля, который в обязательном порядке надо сохранить
+  # в этой переменной прежде чем выполнять операции
+  # с помощью приватных методов addition, subtraction, ...
+  #
+  @@other_operand = nil
+
+  #
+  # Сохранение операнда для бинарных
+  # операций между элементами поля
+  #
+  def set_other_operand(operand)
+    @@other_operand = operand
+  end
+
+  #
+  # Процедура сложения двух элементов поля
+  #
+  def addition
+    return QNumberError.std_error if !@@other_operand.is_a? QNumber
+    QNumber.new Vector.elements(@comp) + Vector.elements(@@other_operand.comp), @prop
+  end
+
+  #
+  # Процедура вычитания двух элементов поля
+  #
+  def subtraction
+    return QNumberError.std_error if !@@other_operand.is_a? QNumber
+    QNumber.new Vector.elements(@comp) - Vector.elements(@@other_operand.comp), @prop
+  end
+
+  #
+  # Процедура умножения двух элементов поля
+  #
+  def multiplication
+    return QNumberError.std_error if !@@other_operand.is_a? QNumber
+    QNumber.new self.matrix_for_norm * Vector.elements(@@other_operand.comp), @prop
+  end
+
+  #
+  # Некоторая бинарная операция с элементом поля
+  # и некоторым другим произвольным элементом
+  #
+  def operation (operand, operation = :addition)
+    case operand
+    when Numeric
+      set_other_operand QNumber.new [ operand ], @prop
+      method(operation).call
+    when QNumber
+      if self.prop_is_equal? operand.get_properties
+        set_other_operand operand
+        method(operation).call
+      else
+        QNumberError.op_diff_fields
+      end
+    else
+      QNumberError.op_diff_types
+    end
+  end
+
+end
+
+#
+# Класс ошибок, возникающих при работе с элементами поля QNumber
+#
+class QNumberError
+
+  #
+  # <div><i>Ошибка:</i></div>
+  # <div>Стандартная ошибка, если не известно
+  # конкретно что именно пошло не так</div>
+  #
+  def self.std_error
+    raise NameError.new "Что-то пошло не так"
+  end
+
+  #
+  # <div><i>Ошибка:</i></div>
+  # <div>Типы операндов не соответствуют друг-другу</div>
+  #
+  def self.op_diff_types
+    raise ArgumentError.new "Типы операндов не соответствуют друг-другу"
+  end
+
+  #
+  # <div><i>Ошибка:</i></div>
+  # <div>Операнды принадлежат полям разного типа</div>
+  #
+  def self.op_diff_fields
+    raise ArgumentError.new "Операнды принадлежат полям разного типа"
+  end
 
 end

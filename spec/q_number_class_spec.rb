@@ -38,7 +38,7 @@ describe QNumber do
       end
       it should_correctly + "неполный массив целых компонент" do
         @q = QNumber.new @new_comp.delete_at @new_comp.count - 1
-        @q.comp.eql? @new_comp.fill @new_comp.count - 1, 0
+        @q.comp.eql? @new_comp.fill @new_comp.count - 1, 0, 1
       end
       it should_correctly + "переполненный массив целых компонент" do
         @q = QNumber.new @new_comp.concat [ 3 ]
@@ -130,7 +130,13 @@ describe QNumber do
         @r = QNumber.new [], @prop.merge({ :d => @d + 1 })
       end
       it "операция должна вернуть сумму элементов поля" do
-        (@q + @p).comp.should == @comp.map! {|component| component * 2}
+        (@q + @p).comp.should == @comp.map { |comp| comp * 2 }
+      end
+      it "операция должна вернуть противоположный данному элемент поля" do
+        (-@q).comp.should == @comp.map { |comp| -comp }
+      end
+      it "операция должна вернуть разность элементов поля" do
+        (@q - @p).comp.should == @def_comp
       end
       it "операция должна вернуть произведение элементов поля" do
         (@q * @p).comp.should == [ 8, 8, 1 ]
