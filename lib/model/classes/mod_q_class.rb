@@ -4,7 +4,7 @@ require 'config/require_all'
 # Класс для работы с элементами алгебраических
 # расширений поля рациональных чисел вида Q(root^n(D))
 #
-class QNumber
+class ModQ
   
   #============================================================
   # Константы и статические переменные
@@ -48,14 +48,14 @@ class QNumber
   # Не меняет знака элемента
   #
   def +@
-    QNumber.new @comp, @prop
+    ModQ.new @comp, @prop
   end
 
   #
   # Противоположный элемент поля
   #
   def -@
-    QNumber.new @comp.map { |component| -component }, @prop
+    ModQ.new @comp.map { |component| -component }, @prop
   end
 
   #
@@ -96,7 +96,7 @@ class QNumber
   def self.set_new_default_properties (properties)
     if properties.is_a? Hash
       properties.each do |key, property|
-        QNumber.set_new_default_property key, property
+        ModQ.set_new_default_property key, property
       end
     end
   end
@@ -163,7 +163,7 @@ class QNumber
     components = self.matrix_for_norm.inverse *
       Vector.elements(Array.new(@prop[:n]).
       map{ |i| 0 }.fill(self.norm, 0, 1))
-    QNumber.new components, @prop
+    ModQ.new components, @prop
   end
 
   #
@@ -254,24 +254,24 @@ class QNumber
   # Процедура сложения двух элементов поля
   #
   def addition
-    return QNumberError.std_error if !@@other_operand.is_a? QNumber
-    QNumber.new Vector.elements(@comp) + Vector.elements(@@other_operand.comp), @prop
+    return ModQError.std_error if !@@other_operand.is_a? ModQ
+    ModQ.new Vector.elements(@comp) + Vector.elements(@@other_operand.comp), @prop
   end
 
   #
   # Процедура вычитания двух элементов поля
   #
   def subtraction
-    return QNumberError.std_error if !@@other_operand.is_a? QNumber
-    QNumber.new Vector.elements(@comp) - Vector.elements(@@other_operand.comp), @prop
+    return ModQError.std_error if !@@other_operand.is_a? ModQ
+    ModQ.new Vector.elements(@comp) - Vector.elements(@@other_operand.comp), @prop
   end
 
   #
   # Процедура умножения двух элементов поля
   #
   def multiplication
-    return QNumberError.std_error if !@@other_operand.is_a? QNumber
-    QNumber.new self.matrix_for_norm * Vector.elements(@@other_operand.comp), @prop
+    return ModQError.std_error if !@@other_operand.is_a? ModQ
+    ModQ.new self.matrix_for_norm * Vector.elements(@@other_operand.comp), @prop
   end
 
   #
@@ -281,26 +281,26 @@ class QNumber
   def operation (operand, operation = :addition)
     case operand
     when Numeric
-      set_other_operand QNumber.new [ operand ], @prop
+      set_other_operand ModQ.new [ operand ], @prop
       method(operation).call
-    when QNumber
+    when ModQ
       if self.prop_is_equal? operand.get_properties
         set_other_operand operand
         method(operation).call
       else
-        QNumberError.op_diff_fields
+        ModQError.op_diff_fields
       end
     else
-      QNumberError.op_diff_types
+      ModQError.op_diff_types
     end
   end
 
 end
 
 #
-# Класс ошибок, возникающих при работе с элементами поля QNumber
+# Класс ошибок, возникающих при работе с элементами поля ModQ
 #
-class QNumberError
+class ModQError
 
   #
   # <div><i>Ошибка:</i></div>

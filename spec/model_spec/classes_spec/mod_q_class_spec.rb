@@ -1,9 +1,9 @@
 require 'config/require_all'
 
-describe QNumber do
+describe ModQ do
 
   before(:each) do
-    @q = QNumber.new
+    @q = ModQ.new
     @d = 2; @n = 3
     @def_comp = [ 0, 0, 0 ]
     @comp = [ 0, 1, 2 ]
@@ -29,39 +29,39 @@ describe QNumber do
       end
       should_correctly = "элемент должен корректно принимать "
       it should_correctly + "массив целых компонент" do
-        @q = QNumber.new @new_comp
+        @q = ModQ.new @new_comp
         @q.comp.eql? @new_comp
       end
       it should_correctly + "вектор целых компонент" do
-        @q = QNumber.new Vector[*@new_comp]
+        @q = ModQ.new Vector[*@new_comp]
         @q.comp.eql? @new_comp
       end
       it should_correctly + "неполный массив целых компонент" do
-        @q = QNumber.new @new_comp.delete_at @new_comp.count - 1
+        @q = ModQ.new @new_comp.delete_at @new_comp.count - 1
         @q.comp.eql? @new_comp.fill @new_comp.count - 1, 0, 1
       end
       it should_correctly + "переполненный массив целых компонент" do
-        @q = QNumber.new @new_comp.concat [ 3 ]
+        @q = ModQ.new @new_comp.concat [ 3 ]
         @q.comp.eql? @new_comp
       end
       it should_correctly + "массив не целых компонент" do
-        @q = QNumber.new [ nil, 1.5, "2 - str" ]
+        @q = ModQ.new [ nil, 1.5, "2 - str" ]
         @q.comp.eql? @new_comp
       end
       it should_correctly + "хеш целых свойств поля" do
-        @q = QNumber.new [], @new_prop
+        @q = ModQ.new [], @new_prop
         @q.get_properties.eql? @new_prop
       end
       it should_correctly + "неполный хеш целых свойств поля" do
-        @q = QNumber.new [], @new_prop.delete(:n)
+        @q = ModQ.new [], @new_prop.delete(:n)
         @q.get_properties.eql? @new_prop.merge :n => @n
       end
       it should_correctly + "переполненный хеш целых свойств поля" do
-        @q = QNumber.new [], @new_prop.merge({ :p => 2 })
+        @q = ModQ.new [], @new_prop.merge({ :p => 2 })
         @q.get_properties.eql? @new_prop
       end
       it should_correctly + "хеш не целых свойств поля" do
-        @q = QNumber.new [], :d => nil, :n => "1 - str"
+        @q = ModQ.new [], :d => nil, :n => "1 - str"
         @q.get_properties.eql? @new_prop
       end
     end
@@ -72,26 +72,26 @@ describe QNumber do
 
     describe "статических методов" do
       it "метод должен изменить размерность поля n" do
-        QNumber.set_new_default_property :n, @n + 1
-        QNumber.new.get_properties[:n].should == @n + 1
+        ModQ.set_new_default_property :n, @n + 1
+        ModQ.new.get_properties[:n].should == @n + 1
       end
       it "метод не должен добавлять полю никакого нового свойства" do
-        QNumber.set_new_default_property :p, 0
-        QNumber.new.get_properties[:p].should == nil
+        ModQ.set_new_default_property :p, 0
+        ModQ.new.get_properties[:p].should == nil
       end
       it "метод должен заменить свойства поля на новые" do
-        QNumber.set_new_default_properties @prop.update :n => @n + 1
-        QNumber.new.get_properties.should == @prop
+        ModQ.set_new_default_properties @prop.update :n => @n + 1
+        ModQ.new.get_properties.should == @prop
       end
       it "метод не должен добавлять полю никаких новых свойств" do
-        QNumber.set_new_default_properties @prop.merge :p => 0
-        QNumber.new.get_properties.should == @prop
+        ModQ.set_new_default_properties @prop.merge :p => 0
+        ModQ.new.get_properties.should == @prop
       end
     end
 
     describe "публичных методов" do
       before(:each) do
-        @q = QNumber.new @comp
+        @q = ModQ.new @comp
       end
       should_return = "метод должен вернуть "
       it should_return + "массив всех свойств поля" do
@@ -135,9 +135,9 @@ describe QNumber do
 
     describe "операций над элементами поля" do
       before(:each) do
-        @q = QNumber.new @comp
-        @p = QNumber.new @comp
-        @r = QNumber.new [], @prop.merge({ :d => @d + 1 })
+        @q = ModQ.new @comp
+        @p = ModQ.new @comp
+        @r = ModQ.new [], @prop.merge({ :d => @d + 1 })
       end
       it "операция должна оставить элемент поля без изменений" do
         (+@q).comp.should == @comp
