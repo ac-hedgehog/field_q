@@ -41,9 +41,9 @@ Rake::RDocTask.new do |rdoc|
   rdoc.options << '--line-numbers'
 end
 
-Rake::TestTask.new do |t|
-  t.test_files = FileList['test/**/*.rb']
-end
+#Rake::TestTask.new do |t|
+#  t.test_files = FileList['test/**/*.rb']
+#end
 
 Spec::Rake::SpecTask.new do |t|
   t.spec_files = FileList['spec/**/*.rb']
