@@ -103,6 +103,16 @@ describe QNumber do
       it should_return + "норму элемента поля" do
         @q.norm.should == 34
       end
+      it should_return + "численное значение элемента поля при подстановке в него d и n" do
+        @q.value.to_s.should == '4.43472315383127'
+      end
+      it should_return + "сопряжённый к данному элемент поля" do
+        @q.conjugate.comp.should == [-4, 8, 1]
+      end
+      it "сопряжённый к данному элемент поля должен давать норму при умножении на него" do
+        (@q * @q.conjugate).comp.should ==
+        Array.new(@prop[:n]).map{ |i| 0 }.fill(@q.norm, 0, 1)
+      end
       it "метод должен конвертировать элемент поля в строку" do
         @q.to_s.should == "< 0, 1, 2 >"
       end
@@ -129,11 +139,14 @@ describe QNumber do
         @p = QNumber.new @comp
         @r = QNumber.new [], @prop.merge({ :d => @d + 1 })
       end
-      it "операция должна вернуть сумму элементов поля" do
-        (@q + @p).comp.should == @comp.map { |comp| comp * 2 }
+      it "операция должна оставить элемент поля без изменений" do
+        (+@q).comp.should == @comp
       end
       it "операция должна вернуть противоположный данному элемент поля" do
         (-@q).comp.should == @comp.map { |comp| -comp }
+      end
+      it "операция должна вернуть сумму элементов поля" do
+        (@q + @p).comp.should == @comp.map { |comp| comp * 2 }
       end
       it "операция должна вернуть разность элементов поля" do
         (@q - @p).comp.should == @def_comp

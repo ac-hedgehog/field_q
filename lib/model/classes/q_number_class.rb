@@ -141,6 +141,32 @@ class QNumber
   end
 
   #
+  # Численное значение элемента поля при подстановке d и n
+  #
+  def value
+    value = Rational.new! 0
+    d = Rational.new! @prop[:d]
+    ind = 0
+    @comp.each do |component|
+      value += component * d.power2((ind/@prop[:n]).to_f)
+      ind += 1
+    end
+    return value
+  end
+
+  #
+  # Получить сопряжённый элемент для данного
+  # (т.е. такой элемент, при умножении на который
+  # получается целое число - норма элемента)
+  #
+  def conjugate
+    components = self.matrix_for_norm.inverse *
+      Vector.elements(Array.new(@prop[:n]).
+      map{ |i| 0 }.fill(self.norm, 0, 1))
+    QNumber.new components, @prop
+  end
+
+  #
   # Конвертирует элемент поля в строку
   #
   def to_s
