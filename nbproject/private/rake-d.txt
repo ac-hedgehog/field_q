@@ -16,4 +16,3 @@ rdoc=Build the rdoc HTML Files
 repackage=Force a rebuild of the package files
 rerdoc=Force a rebuild of the RDOC files
 spec=Run specs
-test=Run tests
