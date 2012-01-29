@@ -38,6 +38,8 @@ class ExtQ < ModQ
     self.set_denominator denominator
     # Заполняем массив компонент элемента модуля
     self.set_components components
+    # Сокращаем числитель и знаменатель если это возможно
+    g_c_d
   end
 
   #============================================================
@@ -121,17 +123,54 @@ class ExtQ < ModQ
   private
 
   #
+  # Сокращение числителя и знаменателя элемента поля,
+  # причём знаменатель всегда положителен
+  #
+  def g_c_d
+    if @denom < 0
+      @comp.map! { |component| -component }
+      @denom *= -1
+    end
+    return self if @denom == 1
+    gcd = @denom
+    @comp.each do |component|
+      gcd = gcd.gcd component
+      return self if gcd == 1
+    end
+    @denom /= gcd
+    @comp.map! { |component| component / gcd }
+  end
+
+  #
+  # НОК знаменателей двух элементов поля
+  #
+  @@denom_lcm = nil
+
+  #
+  # Запомнить НОК знаменателей двух элементов поля
+  #
+  def set_denom_lcm
+    @@denom_lcm = @denom.lcm(@@other_operand.denom)
+  end
+
+  #
   # Процедура сложения двух элементов поля
   #
   def addition
-    self #ExtQ.new Vector.elements(@comp) + Vector.elements(@@other_operand.comp), @denom, @prop
+    comp_sum = 
+      Vector.elements(@comp) * (@@denom_lcm / @denom) +
+      Vector.elements(@@other_operand.comp) * (@@denom_lcm / @@other_operand.denom)
+    ExtQ.new comp_sum, @@denom_lcm, @prop
   end
 
   #
   # Процедура вычитания двух элементов поля
   #
   def subtraction
-    self #ExtQ.new Vector.elements(@comp) - Vector.elements(@@other_operand.comp), @denom, @prop
+    comp_sum =
+      Vector.elements(@comp) * (@@denom_lcm / @denom) -
+      Vector.elements(@@other_operand.comp) * (@@denom_lcm / @@other_operand.denom)
+    ExtQ.new comp_sum, @@denom_lcm, @prop
   end
 
   #
@@ -156,23 +195,28 @@ class ExtQ < ModQ
     case operand
     when Fixnum, Bignum
       set_other_operand ExtQ.new [ operand * @denom ], @denom, @prop
-      method(operation).call
     when ModQ, ExtQ
       # Если умножаем элемент поля на элемент модуля
       # - приводим элемент модуля к элементу поля
-      if operand.is_a? ModQ
+      if !operand.is_a? ExtQ
         operand *= @denom
         operand = ExtQ.new operand.comp, @denom, operand.get_properties
       end
       if self.prop_is_equal? operand.get_properties
         set_other_operand operand
-        method(operation).call
       else
         FieldQError.op_diff_fields
       end
     else
       FieldQError.op_diff_types
     end
+    #
+    # Убрать это извращение, использовать вместо глобальных
+    # переменных класса вызов
+    # send :method_name, arg1, arg2, ...
+    #
+    set_denom_lcm
+    method(operation).call
   end
 
 end
