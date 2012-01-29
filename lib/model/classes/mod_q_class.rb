@@ -1,17 +1,23 @@
 require 'config/require_all'
 
 #
-# Класс для работы с элементами алгебраических
-# расширений поля рациональных чисел вида Q(root^n(D))
+# Класс для работы с элементами модуля алгебраического
+# расширения поля рациональных чисел вида Q(root^n(D))
 #
 class ModQ
   
   #============================================================
   # Константы и статические переменные
   #============================================================
-
-  N = 3 # Размерность поля Q(корень n степени из D) по дефолту
-  D = 2 # Собственно, дефолтное значение D для поля Q
+  
+  #
+  # Размерность поля Q(корень n степени из D) по дефолту
+  #
+  N = 3
+  #
+  # Собственно, дефолтное значение D для поля Q
+  #
+  D = 2
   #
   # Массив свойств поля, которые присваиваются каждому
   # новому созданному элементу по-дефолту
@@ -23,25 +29,25 @@ class ModQ
   attr_accessor :comp
   
   #============================================================
-  # Конструктор поля
+  # Конструктор модуля
   #============================================================
 
   #
-  # <div>Создание элемента поля</div>
+  # <div>Создание элемента модуля</div>
   # <div><i>components</i> - коэффициенты при различных степенях
   # корня n-ной степени из D</div>
-  # <div><i>properties</i> - общие свойства поля, которому принадлежит
+  # <div><i>properties</i> - общие свойства модуля, которому принадлежит
   # данный элемент</div>
   #
-  def initialize (components = Vector[], properties = @@default_prop)
-    # Заполняем свойства нового элемента поля
+  def initialize(components = Vector[], properties = @@default_prop)
+    # Заполняем свойства нового элемента модуля
     self.set_properties properties
-    # Заполняем массив компонент элемента поля
+    # Заполняем массив компонент элемента модуля
     self.set_components components
   end
 
   #============================================================
-  # Операции в поле
+  # Операции в модуле
   #============================================================
 
   #
@@ -52,57 +58,57 @@ class ModQ
   end
 
   #
-  # Противоположный элемент поля
+  # Противоположный элемент
   #
   def -@
     ModQ.new @comp.map { |component| -component }, @prop
   end
 
   #
-  # Операция сложения в поле
+  # Операция сложения
   #
   def +(q)
     operation q, :addition
   end
 
   #
-  # Операция вычитания в поле
+  # Операция вычитания
   #
   def -(q)
     operation q, :subtraction
   end
 
   #
-  # Операция умножения в поле
+  # Операция умножения
   #
   def *(q)
     operation q, :multiplication
   end
   
   #============================================================
-  # Статические методы поля
+  # Статические методы модуля
   #============================================================
 
   #
-  # Изменяет одно из дефолтных свойств поля
+  # Изменяет одно из дефолтных свойств
   #
-  def self.set_new_default_property (key, property)
+  def self.set_new_default_property(key, property)
     @@default_prop.update key => property.to_i if @@default_prop.has_key? key
   end
 
   #
-  # Изменяет все дефолтные свойства поля
+  # Изменяет все дефолтные свойства
   #
-  def self.set_new_default_properties (properties)
+  def self.set_new_default_properties(properties)
     if properties.is_a? Hash
       properties.each do |key, property|
-        ModQ.set_new_default_property key, property
+        self.set_new_default_property key, property
       end
     end
   end
   
   #============================================================
-  # Публичные методы
+  # Публичные методы модуля
   #============================================================
   public
 
@@ -134,14 +140,14 @@ class ModQ
   end
 
   #
-  # Возвращает норму элемента поля
+  # Возвращает норму элемента модуля
   #
   def norm
     self.matrix_for_norm.determinant
   end
 
   #
-  # Численное значение элемента поля при подстановке d и n
+  # Численное значение элемента модуля при подстановке d и n
   #
   def value
     value = Rational.new! 0
@@ -167,14 +173,14 @@ class ModQ
   end
 
   #
-  # Конвертирует элемент поля в строку
+  # Конвертирует элемент модуля в строку
   #
   def to_s
     "< #{@comp.join(", ")} >"
   end
 
   #
-  # Конвертирует элемент поля в строку (подробная запись)
+  # Конвертирует элемент модуля в строку (подробная запись)
   #
   def to_full_s
     str = ""
@@ -188,7 +194,7 @@ class ModQ
   # Проверяет, совпадают ли свойства поля с
   # заданным хэшем свойств <i>properties</i>
   #
-  def prop_is_equal? (properties)
+  def prop_is_equal?(properties)
     return false if !properties.is_a? Hash
     properties.each do |key, property|
       return false if property != @prop[key]
@@ -197,14 +203,14 @@ class ModQ
   end
   
   #============================================================
-  # защищённые методы поля
+  # Защищённые методы поля
   #============================================================
   protected
 
   #
   # Добавляет компоненты новому элементу поля
   #
-  def set_components (components = Vector[])
+  def set_components(components = Vector[])
     if (components.is_a?(Vector)||components.is_a?(Array))
       @comp = components.to_a.first @prop[:n]
       for i in 0..@prop[:n] - 1
@@ -218,7 +224,7 @@ class ModQ
   #
   # Добавляет свойства поля (только допустимые по-дефолту)
   #
-  def set_properties (properties = @@default_prop)
+  def set_properties(properties = @@default_prop)
     if properties.is_a? Hash
       @prop = {}
       @@default_prop.each do |key, property|
@@ -230,7 +236,7 @@ class ModQ
   end
 
   #============================================================
-  # Приватные методы поля
+  # Приватные методы модуля
   #============================================================
   private
 
@@ -251,36 +257,33 @@ class ModQ
   end
 
   #
-  # Процедура сложения двух элементов поля
+  # Процедура сложения двух элементов модуля
   #
   def addition
-    return ModQError.std_error if !@@other_operand.is_a? ModQ
     ModQ.new Vector.elements(@comp) + Vector.elements(@@other_operand.comp), @prop
   end
 
   #
-  # Процедура вычитания двух элементов поля
+  # Процедура вычитания двух элементов модуля
   #
   def subtraction
-    return ModQError.std_error if !@@other_operand.is_a? ModQ
     ModQ.new Vector.elements(@comp) - Vector.elements(@@other_operand.comp), @prop
   end
 
   #
-  # Процедура умножения двух элементов поля
+  # Процедура умножения двух элементов модуля
   #
   def multiplication
-    return ModQError.std_error if !@@other_operand.is_a? ModQ
     ModQ.new self.matrix_for_norm * Vector.elements(@@other_operand.comp), @prop
   end
 
   #
-  # Некоторая бинарная операция с элементом поля
+  # Некоторая бинарная операция с элементом модуля
   # и некоторым другим произвольным элементом
   #
-  def operation (operand, operation = :addition)
+  def operation(operand, operation = :addition)
     case operand
-    when Numeric
+    when Fixnum, Bignum
       set_other_operand ModQ.new [ operand ], @prop
       method(operation).call
     when ModQ
@@ -288,43 +291,11 @@ class ModQ
         set_other_operand operand
         method(operation).call
       else
-        ModQError.op_diff_fields
+        FieldQError.op_diff_modules
       end
     else
-      ModQError.op_diff_types
+      FieldQError.op_diff_types
     end
-  end
-
-end
-
-#
-# Класс ошибок, возникающих при работе с элементами поля ModQ
-#
-class ModQError
-
-  #
-  # <div><i>Ошибка:</i></div>
-  # <div>Стандартная ошибка, если не известно
-  # конкретно что именно пошло не так</div>
-  #
-  def self.std_error
-    raise NameError.new "Что-то пошло не так"
-  end
-
-  #
-  # <div><i>Ошибка:</i></div>
-  # <div>Типы операндов не соответствуют друг-другу</div>
-  #
-  def self.op_diff_types
-    raise ArgumentError.new "Типы операндов не соответствуют друг-другу"
-  end
-
-  #
-  # <div><i>Ошибка:</i></div>
-  # <div>Операнды принадлежат полям разного типа</div>
-  #
-  def self.op_diff_fields
-    raise ArgumentError.new "Операнды принадлежат полям разного типа"
   end
 
 end

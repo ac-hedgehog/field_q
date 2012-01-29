@@ -3,11 +3,7 @@ require 'config/require_all'
 describe ExtQ do
   before(:each) do
     @q = ExtQ.new
-    #@d = 2; @n = 3
-    #@def_comp = [ 0, 0, 0 ]
-    @comp = [ 0, 1, 2 ]
-    #@def_prop = { :d => @d, :n => @n }
-    #@prop = @def_prop
+    @comp = [0, 1, 2]
     @def_denom = 1
     @denom = 2
   end
@@ -21,18 +17,23 @@ describe ExtQ do
     end
 
     describe "нового элемента поля с параметрами" do
-      should_correctly = "элемент должен корректно принимать "
-      it should_correctly + "знаменатель - целое число" do
+      should_correctly = "элемент должен корректно "
+      it should_correctly + "принимать знаменатель - целое число" do
         @q = ExtQ.new [], @denom
         @q.denom.eql? @denom
       end
-      it should_correctly + "знаменатель - вещественное число" do
+      it should_correctly + "принимать знаменатель - вещественное число" do
         @q = ExtQ.new [], 2.5
         @q.denom.eql? 2
       end
-      it should_correctly + "знаменатель строкового типа" do
+      it should_correctly + "принимать знаменатель строкового типа" do
         @q = ExtQ.new [], '2 - str'
         @q.denom.eql? 2
+      end
+      it should_correctly + "сокращать числитель и знаменатель, если это возможно" do
+        @q = ExtQ.new [-2, 0, 4], 2
+        @q.comp.should == [-1, 0, 2]
+        @q.denom.should == 1
       end
     end
 
@@ -46,14 +47,14 @@ describe ExtQ do
 
     describe "публичных методов" do
       before(:each) do
-        @q = ModQ.new @comp, @denom
+        @q = ExtQ.new @comp, @denom
       end
       should_return = "метод должен вернуть "
       it should_return + "численное значение элемента поля при подстановке в него d, n и denom" do
-        @q.value.to_s.should == '2.21736157691563'
+        @q.value.to_s.should == '2.21736157691564'
       end
       it "метод должен конвертировать элемент поля в строку" do
-        @q.to_s.should == "< 0, 1, 2 >/<2>"
+        @q.to_s.should == "< 0, 1, 2 >/< 2 >"
       end
       it "метод должен конвертировать элемент поля в полную строку" do
         @q.to_full_s.should == "(1/2)*(0*(w^0) + 1*(w^1) + 2*(w^2))"
@@ -61,10 +62,35 @@ describe ExtQ do
     end
 
     describe "операций над элементами поля" do
-      it "операция должна вернуть сумму элементов поля"
-      it "операция должна вернуть разность элементов поля"
-      it "операция должна вернуть произведение элементов поля"
-      it "операция должна вернуть частное элементов поля"
+      before(:each) do
+        @q = ExtQ.new @comp, @denom
+        @p = ExtQ.new [1, 0, -1], 3
+      end
+      should_return = "операция должна вернуть "
+      it "операция никак не должна поменять элемент поля" do
+        (+@q).comp.should == @comp
+        (+@q).denom.should == @denom
+      end
+      it should_return + "противоположный элемент поля" do
+        (-@q).comp.should == @comp.map { |component| -component }
+        (-@q).denom.should == @denom
+      end
+      it should_return + "сумму элементов поля" do
+        (@q + @p).comp.should == [2, 3, 4]
+        (@q + @p).denom.should == 6
+      end
+      it should_return + "разность элементов поля" do
+        (@q - @p).comp.should == [-2, 3, 8]
+        (@q - @p).denom.should == 6
+      end
+      it should_return + "произведение элементов поля" do
+        (@q * @p).comp.should == [-2, -3, 2]
+        (@q * @p).denom.should == 6
+      end
+      it should_return + "частное элементов поля" do
+        (@q / @p).comp.should == [-10, -5, -4]
+        (@q / @p).denom.should == 3
+      end
     end
 
   end
