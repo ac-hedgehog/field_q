@@ -157,7 +157,7 @@ class ModQ
       value += component * d.power2((ind/@prop[:n]).to_f)
       ind += 1
     end
-    return value
+    value
   end
 
   #
@@ -241,40 +241,39 @@ class ModQ
   private
 
   #
-  # Второй операнд бинарной операции над элементами
-  # поля, который в обязательном порядке надо сохранить
-  # в этой переменной прежде чем выполнять операции
-  # с помощью приватных методов addition, subtraction, ...
+  # Процедура складывания в общем виде
   #
-  @@other_operand = nil
+  def accession(operation, operand)
+    ModQ.new Vector.elements(@comp).send(operation,
+      Vector.elements(operand.comp)), @prop
+  end
 
   #
-  # Сохранение операнда для бинарных
-  # операций между элементами поля
+  # Умножение элементов на уровне компонент
   #
-  def set_other_operand(operand)
-    @@other_operand = operand
+  def comp_mult(operand)
+    self.matrix_for_norm * Vector.elements(operand.comp)
   end
 
   #
   # Процедура сложения двух элементов модуля
   #
-  def addition
-    ModQ.new Vector.elements(@comp) + Vector.elements(@@other_operand.comp), @prop
+  def addition(operand)
+    accession :+, operand
   end
 
   #
   # Процедура вычитания двух элементов модуля
   #
-  def subtraction
-    ModQ.new Vector.elements(@comp) - Vector.elements(@@other_operand.comp), @prop
+  def subtraction(operand)
+    accession :-, operand
   end
 
   #
   # Процедура умножения двух элементов модуля
   #
-  def multiplication
-    ModQ.new self.matrix_for_norm * Vector.elements(@@other_operand.comp), @prop
+  def multiplication(operand)
+    ModQ.new comp_mult(operand), @prop
   end
 
   #
@@ -284,18 +283,15 @@ class ModQ
   def operation(operand, operation = :addition)
     case operand
     when Fixnum, Bignum
-      set_other_operand ModQ.new [ operand ], @prop
-      method(operation).call
+      operand = ModQ.new [ operand ], @prop
     when ModQ
-      if self.prop_is_equal? operand.get_properties
-        set_other_operand operand
-        method(operation).call
-      else
+      if !self.prop_is_equal? operand.get_properties
         FieldQError.op_diff_modules
       end
     else
       FieldQError.op_diff_types
     end
+    send operation, operand
   end
 
 end

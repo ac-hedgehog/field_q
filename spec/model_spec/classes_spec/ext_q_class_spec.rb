@@ -89,7 +89,7 @@ describe ExtQ do
       end
       it should_return + "частное элементов поля" do
         (@q / @p).comp.should == [-10, -5, -4]
-        (@q / @p).denom.should == 3
+        (@q / @p).denom.should == 2
       end
     end
 

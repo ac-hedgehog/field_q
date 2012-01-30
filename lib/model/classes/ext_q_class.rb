@@ -83,7 +83,7 @@ class ExtQ < ModQ
   #
   def value
     q = ModQ.new @comp, @prop
-    return q.value / @denom
+    q.value / @denom
   end
 
   #
@@ -98,7 +98,7 @@ class ExtQ < ModQ
   #
   def to_full_s
     q = ModQ.new @comp, @prop
-    return "(1/#{@denom})*(" + q.to_full_s + ")"
+    "(1/#{@denom})*(" + q.to_full_s + ")"
   end
 
   #============================================================
@@ -142,49 +142,43 @@ class ExtQ < ModQ
   end
 
   #
-  # НОК знаменателей двух элементов поля
+  # Процедура складывания в общем виде
   #
-  @@denom_lcm = nil
-
-  #
-  # Запомнить НОК знаменателей двух элементов поля
-  #
-  def set_denom_lcm
-    @@denom_lcm = @denom.lcm(@@other_operand.denom)
+  def accession(operation, operand, denom_lcm)
+    comp_sum = (Vector.elements(@comp) *
+      (denom_lcm / @denom)).send(operation,
+      Vector.elements(operand.comp) *
+      (denom_lcm / operand.denom))
+    ExtQ.new comp_sum, denom_lcm, @prop
   end
 
   #
   # Процедура сложения двух элементов поля
   #
-  def addition
-    comp_sum = 
-      Vector.elements(@comp) * (@@denom_lcm / @denom) +
-      Vector.elements(@@other_operand.comp) * (@@denom_lcm / @@other_operand.denom)
-    ExtQ.new comp_sum, @@denom_lcm, @prop
+  def addition(operand, denom_lcm)
+    accession :+, operand, denom_lcm
   end
 
   #
   # Процедура вычитания двух элементов поля
   #
-  def subtraction
-    comp_sum =
-      Vector.elements(@comp) * (@@denom_lcm / @denom) -
-      Vector.elements(@@other_operand.comp) * (@@denom_lcm / @@other_operand.denom)
-    ExtQ.new comp_sum, @@denom_lcm, @prop
+  def subtraction(operand, denom_lcm)
+    accession :-, operand, denom_lcm
   end
 
   #
   # Процедура умножения двух элементов поля
   #
-  def multiplication
-    self #ExtQ.new self.matrix_for_norm * Vector.elements(@@other_operand.comp), @denom * @@other_operand.denom, @prop
+  def multiplication(operand, denom_lcm)
+    ExtQ.new comp_mult(operand), @denom * operand.denom, @prop
   end
 
   #
   # Процедура деления одного элемента поля на другой
   #
-  def division
-    self
+  def division(operand, denom_lcm)
+    comp_mult = comp_mult operand.conjugate
+    ExtQ.new comp_mult, (operand.norm * @denom / operand.denom)
   end
 
   #
@@ -194,7 +188,7 @@ class ExtQ < ModQ
   def operation(operand, operation = :addition)
     case operand
     when Fixnum, Bignum
-      set_other_operand ExtQ.new [ operand * @denom ], @denom, @prop
+      operand = ExtQ.new [ operand * @denom ], @denom, @prop
     when ModQ, ExtQ
       # Если умножаем элемент поля на элемент модуля
       # - приводим элемент модуля к элементу поля
@@ -202,21 +196,13 @@ class ExtQ < ModQ
         operand *= @denom
         operand = ExtQ.new operand.comp, @denom, operand.get_properties
       end
-      if self.prop_is_equal? operand.get_properties
-        set_other_operand operand
-      else
+      if !self.prop_is_equal? operand.get_properties
         FieldQError.op_diff_fields
       end
     else
       FieldQError.op_diff_types
     end
-    #
-    # Убрать это извращение, использовать вместо глобальных
-    # переменных класса вызов
-    # send :method_name, arg1, arg2, ...
-    #
-    set_denom_lcm
-    method(operation).call
+    send operation, operand, @denom.lcm(operand.denom)
   end
 
 end
