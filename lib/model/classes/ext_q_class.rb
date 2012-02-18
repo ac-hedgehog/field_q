@@ -32,12 +32,10 @@ class ExtQ < ModQ
   # данный элемент</div>
   #
   def initialize(components = Vector[], denominator = DENOM, properties = @@default_prop)
-    # Заполняем свойства нового элемента модуля
-    self.set_properties properties
+    # Вызываем прежде метод предка
+    super components, properties
     # Добавляем знаменатель
     self.set_denominator denominator
-    # Заполняем массив компонент элемента модуля
-    self.set_components components
     # Сокращаем числитель и знаменатель если это возможно
     g_c_d
   end
@@ -82,23 +80,22 @@ class ExtQ < ModQ
   # Численное значение элемента модуля при подстановке d и n
   #
   def value
-    q = ModQ.new @comp, @prop
-    q.value / @denom
+    super / @denom
   end
 
   #
   # Конвертирует элемент модуля в строку
   #
   def to_s
-    "< #{@comp.join(", ")} >/< #{@denom} >"
+    "#{super}/< #{@denom} >"
   end
 
   #
   # Конвертирует элемент модуля в строку (подробная запись)
   #
   def to_full_s
-    q = ModQ.new @comp, @prop
-    "(1/#{@denom})*(" + q.to_full_s + ")"
+    #q = ModQ.new @comp, @prop
+    "(1/#{@denom})*(#{super})"
   end
 
   #============================================================
